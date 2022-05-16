@@ -5,7 +5,7 @@
 #include "mcts.h"
 #include <iostream>
 
-static const int num_simulations = 8;
+static const int num_simulations = 1;
 
 
 int main(int argc, char* argv[]) {
@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
             {'.', '.', '.'},
             {'.', '.', '.'},
     }};
-    Node root(state, move(0, 0, 'o'));
+    Node root(state, game_move(0, 0, 'o'));
     root.visit_count++;
     root.print();
     auto root_ptr = std::make_shared<Node>(root);

@@ -18,7 +18,7 @@ public:
     void backprop(std::shared_ptr<Node> &terminal);
 
 private:
-    double ucb(std::shared_ptr<Node> &node);
+    double ucb(const std::shared_ptr<Node> &node);
     std::shared_ptr<Node> best_child_ucb(std::shared_ptr<Node> &curr);
 
     std::mt19937 rng;

@@ -6,7 +6,7 @@
 MCTS::MCTS(std::shared_ptr<Node> &root): root(root), rng((std::random_device())()) {};
 MCTS::~MCTS() = default;
 
-double MCTS::ucb(std::shared_ptr<Node> &node) {
+double MCTS::ucb(const std::shared_ptr<Node> &node) {
     auto score = node->avg_win_rate + explore_rate * sqrt( log((float)node->parent->visit_count) / ((float)node->visit_count + 1e-9) );
     return score;
 }
@@ -17,41 +17,43 @@ std::shared_ptr<Node> MCTS::best_child_ucb(std::shared_ptr<Node> &curr){
 
     double best_score = -1e9;
     std::shared_ptr<Node> best_child;
-    for(auto&& child: curr->children) {
+
+    for(const auto & [move, child]: curr->children) {
         double score = ucb(child);
         if(score > best_score) {
             best_score = score;
             best_child = child;
         }
     }
+
     return best_child;
 }
 
 std::shared_ptr<Node> MCTS::select() {
-    auto curr_node = root;
-    while(!curr_node->children.empty()){
-        auto best_ch = best_child(curr_node);
-        curr_node = best_ch;
+    auto current = root;
+    while(!current->unexpanded.empty()) {
+        auto best_ch = best_child_ucb(current);
+        current = best_ch;
     }
-    return curr_node;
+    return current;
 }
 
 std::shared_ptr<Node> MCTS::expand(std::shared_ptr<Node> &leaf) {
-    // expand all the children of the leaf node
+    // expand a child of the leaf node
     auto s = leaf->get_state();
-    auto actions = leaf->get_actions();
-    for(auto&& action: actions){
-        state new_state = s;
-        new_state[action.x][action.y] = leaf->turn;
-        auto child = std::make_unique<Node>(new_state, move(action.x, action.y, leaf->turn), leaf);
-        leaf->children.emplace_back(std::move(child));
+    if(leaf->unexpanded.empty()) { // we haven't mapped this node's legal moves yet
+        leaf->unexpanded = leaf->get_actions();
     }
-
-    // select a random child node of the leaf node
-    int num_children = leaf->children.size();
-    std::uniform_int_distribution<int> uni(0, num_children-1);
-    auto child_idx = uni(rng);
-    return leaf->children[child_idx];
+    auto actions = leaf->unexpanded;
+    std::uniform_int_distribution<int> uni(0, actions.size() - 1);
+    auto action_idx = uni(rng);
+    auto action = actions[action_idx];
+    state new_state = s;
+    new_state[action.x][action.y] = action.action;
+    game_move m(action.x, action.y, leaf->turn);
+    auto child = std::make_shared<Node>(new_state, m, leaf);
+    leaf->children.insert(std::make_pair(m, child));
+    return child;
 }
 
 std::shared_ptr<Node> MCTS::simulate(const std::shared_ptr<Node> &leaf) {
@@ -88,10 +90,11 @@ void MCTS::backprop(std::shared_ptr<Node> &terminal) {
 std::shared_ptr<Node> MCTS::best_child(const std::shared_ptr<Node> &node) {
     // return the best child node by node value only (used during test time)
     assert(!node->children.empty());
+    using pair_type = decltype(node->children)::value_type;
     auto max  = std::max_element(node->children.begin(), node->children.end(),
-                                 [](const std::shared_ptr<Node> &a, const std::shared_ptr<Node> &b)
+                                 [](const pair_type &a, const pair_type &b)
                                  {
-                                    return a->avg_win_rate < b->avg_win_rate;
+                                    return a.second->avg_win_rate < b.second->avg_win_rate;
                                  });
-    return *max;
+    return max->second;
 }

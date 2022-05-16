@@ -5,7 +5,7 @@
 #include "node.h"
 #include <iostream>
 
-Node::Node(state s, move last_move,  std::shared_ptr<Node> parent, bool terminal): _state(s), last_move(last_move), parent(parent), terminal(terminal), rng((std::random_device())()){
+Node::Node(state s, game_move last_move,  std::shared_ptr<Node> parent, bool terminal): _state(s), last_move(last_move), parent(parent), terminal(terminal), rng((std::random_device())()){
     visit_count = 0;
     win_count = 0;
     avg_win_rate = 0;
@@ -18,19 +18,19 @@ const state Node::get_state() const{
     return _state;
 }
 
-std::vector<move> Node::get_actions() const {
-    std::vector<move> actions;
+std::vector<game_move> Node::get_actions() const {
+    std::vector<game_move> actions;
     for(int i=0; i < board_row_size; ++i) {
         for(int j = 0; j < board_col_size; ++j) {
             if(_state[i][j] == '.'){
-                actions.emplace_back(move(i, j, turn));
+                actions.emplace_back(game_move(i, j, turn));
             }
         }
     }
     return actions;
 }
 
-move Node::random_action() {
+game_move Node::random_action() {
     auto actions = get_actions();
     std::uniform_int_distribution<int> uni(0, actions.size()-1);
     int action_idx = uni(rng);
