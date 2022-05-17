@@ -7,8 +7,9 @@ MCTS::MCTS(std::shared_ptr<Node> &root): root(root), rng((std::random_device())(
 MCTS::~MCTS() = default;
 
 double MCTS::ucb(const std::shared_ptr<Node> &node) {
-    auto score = node->avg_win_rate + explore_rate * sqrt( log((float)node->parent->visit_count) / ((float)node->visit_count + 1e-9) );
-    return score;
+    auto exploit = (double)node->avg_win_rate;
+    auto explore = explore_rate * sqrt( log((double)node->parent->visit_count) / ((double)node->visit_count + 1e-9) );
+    return exploit + explore;
 }
 
 std::shared_ptr<Node> MCTS::best_child_ucb(std::shared_ptr<Node> &curr){
@@ -31,27 +32,31 @@ std::shared_ptr<Node> MCTS::best_child_ucb(std::shared_ptr<Node> &curr){
 
 std::shared_ptr<Node> MCTS::select() {
     auto current = root;
-    while(!current->unexpanded.empty()) {
+    while(current->unexpanded.empty() && !current->terminal) { // keep recursing down as long as the current node doesn't have unexpanded children
         auto best_ch = best_child_ucb(current);
         current = best_ch;
+    }
+    if(current->terminal) {
+        terminal_count++;
     }
     return current;
 }
 
 std::shared_ptr<Node> MCTS::expand(std::shared_ptr<Node> &leaf) {
-    // expand a child of the leaf node
-    auto s = leaf->get_state();
-    if(leaf->unexpanded.empty()) { // we haven't mapped this node's legal moves yet
-        leaf->unexpanded = leaf->get_actions();
+    // expand a child of the leaf node if an unexpanded child exists
+    if(leaf->is_terminal()) {
+        return leaf;
     }
-    auto actions = leaf->unexpanded;
-    std::uniform_int_distribution<int> uni(0, actions.size() - 1);
+    auto s = leaf->get_state();
+    std::uniform_int_distribution<int> uni(0, leaf->unexpanded.size() - 1);
     auto action_idx = uni(rng);
-    auto action = actions[action_idx];
+    auto action = leaf->unexpanded[action_idx];
+    leaf->unexpanded.erase(leaf->unexpanded.begin() + action_idx); // remove the used action from unexpanded since it will be expanded
     state new_state = s;
     new_state[action.x][action.y] = action.action;
     game_move m(action.x, action.y, leaf->turn);
     auto child = std::make_shared<Node>(new_state, m, leaf);
+    child->unexpanded = child->get_actions();
     leaf->children.insert(std::make_pair(m, child));
     return child;
 }
@@ -73,14 +78,10 @@ void MCTS::backprop(std::shared_ptr<Node> &terminal) {
     terminal->visit_count++;
     terminal->avg_win_rate = terminal->win_count / (float)terminal->visit_count;
     auto current = terminal->parent;
-    auto val = terminal->win_count;
+    auto score = -terminal->end_game_result.score;
     while(current) {
-        if(val == 0.5) { // draw, give 0.5 to each player
-            current->win_count += val;
-        }else{ // give +1 only to the winning player
-            current->win_count += winner == current->last_move.action ? val : 0.0;
-        }
-        current->win_count += val;
+        current->win_count += score;
+        score = -score;
         current->visit_count++;
         current->avg_win_rate = current->win_count / (float)current->visit_count;
         current = current->parent;
@@ -97,4 +98,17 @@ std::shared_ptr<Node> MCTS::best_child(const std::shared_ptr<Node> &node) {
                                     return a.second->avg_win_rate < b.second->avg_win_rate;
                                  });
     return max->second;
+}
+
+bool MCTS::is_valid(const std::shared_ptr<Node> &current_node, game_move m) {
+    return current_node->get_state()[m.x][m.y] == '.';
+}
+
+std::shared_ptr<Node> MCTS::take_action(const std::shared_ptr<Node> &current_node, game_move m) {
+    if(is_valid(current_node, m)){
+        return current_node->children[m];
+    }else{
+        std::cout << "The provided move is not a valid one from this state. Please try again." << std::endl;
+        return current_node;
+    }
 }

@@ -13,8 +13,19 @@
 static const int board_row_size = 3;
 static const int board_col_size = 3;
 
+static const float win = 1.0;
+static const float loss = -1.0;
+static const float draw = 0.0;
+
 typedef std::array<std::array<char, 3>, 3> state;
 
+struct game_result{
+    // result of a game after we reach a terminal state
+    bool result;
+    float score;
+    game_result(bool t, float s): result(t), score(s){};
+    ~game_result()= default;;
+};
 
 struct game_move { // cell of the 3 x 3 tic tac toe board
     std::uint8_t x, y;
@@ -23,7 +34,7 @@ struct game_move { // cell of the 3 x 3 tic tac toe board
         assert(x <= 2 && y <= 2);
         assert(action == 'x' || action == 'o');
     };
-    ~game_move(){};
+    ~game_move()= default;;
     // == operator in order to hash into unordered maps
     bool operator==(const game_move &other) const {
         return x == other.x && y == other.y && action == other.action;
@@ -55,6 +66,7 @@ public:
     bool terminal;
     char turn; // who's turn is it in this node
     game_move last_move; // the move taken to reach this state
+    game_result end_game_result = game_result(NULL, NULL); // only terminal nodes will store this
 
     std::shared_ptr<Node> parent;
     std::unordered_map<game_move, std::shared_ptr<Node>> children;

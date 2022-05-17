@@ -44,6 +44,9 @@ bool Node::is_terminal() {
 
     // check for draw -> board is full
     int empty_cell_count = 0;
+    bool is_terminal = false;
+    float score;
+
     for(int i = 0; i < board_row_size; ++i) {
         for(int j = 0; j < board_col_size; ++j) {
             if(_state[i][j] == '.') {
@@ -52,8 +55,8 @@ bool Node::is_terminal() {
         }
     }
     if(!empty_cell_count) {
-        win_count = 0.5;
-        return true;
+        score = draw;
+        is_terminal = true;
     }
 
     //check for cross of either x's or o's
@@ -66,8 +69,8 @@ bool Node::is_terminal() {
             break;
         }
         if(j == board_col_size - 1) { // 3 x's or o's in a row
-            win_count = last_move.action == turn ? 1.0 : 0.0;
-            return true;
+            score = last_move.action == turn ? win : loss;
+            is_terminal = true;
         }
     }
 
@@ -78,8 +81,8 @@ bool Node::is_terminal() {
             break;
         }
         if(i == board_row_size - 1) {
-            win_count = last_move.action == turn ? 1.0 : 0.0;
-            return true;
+            score = last_move.action == turn ? win : loss;
+            is_terminal = true;
         }
     }
 
@@ -90,8 +93,8 @@ bool Node::is_terminal() {
                 break;
             }
             if(i == board_row_size - 1) {
-                win_count = last_move.action == turn ? 1.0 : 0.0;
-                return true;
+                score = last_move.action == turn ? win : loss;
+                is_terminal = true;
             }
         }
     }
@@ -103,13 +106,15 @@ bool Node::is_terminal() {
                 break;
             }
             if(i == board_row_size - 1) {
-                win_count = last_move.action == turn ? 1.0 : 0.0;
-                return true;
+                score = last_move.action == turn ? win : loss;
+                is_terminal = true;
             }
         }
     }
-    // no draw or 3 x's/o's in a row, so not a terminal state
-    return false;
+    win_count += score;
+    this->terminal = is_terminal;
+    end_game_result = game_result(terminal, score);
+    return is_terminal;
 }
 
 
