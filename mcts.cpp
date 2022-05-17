@@ -78,10 +78,9 @@ void MCTS::backprop(std::shared_ptr<Node> &terminal) {
     terminal->visit_count++;
     terminal->avg_win_rate = terminal->win_count / (float)terminal->visit_count;
     auto current = terminal->parent;
-    auto score = -terminal->end_game_result.score;
+    auto score = terminal->end_game_result.score;
     while(current) {
-        current->win_count += score;
-        score = -score;
+        current->win_count += current->last_move.action == winner ? score : -score;
         current->visit_count++;
         current->avg_win_rate = current->win_count / (float)current->visit_count;
         current = current->parent;

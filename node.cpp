@@ -69,7 +69,7 @@ bool Node::is_terminal() {
             break;
         }
         if(j == board_col_size - 1) { // 3 x's or o's in a row
-            score = last_move.action == turn ? win : loss;
+            score = win;
             is_terminal = true;
         }
     }
@@ -81,7 +81,7 @@ bool Node::is_terminal() {
             break;
         }
         if(i == board_row_size - 1) {
-            score = last_move.action == turn ? win : loss;
+            score = win;
             is_terminal = true;
         }
     }
@@ -93,7 +93,7 @@ bool Node::is_terminal() {
                 break;
             }
             if(i == board_row_size - 1) {
-                score = last_move.action == turn ? win : loss;
+                score = win;
                 is_terminal = true;
             }
         }
@@ -106,7 +106,7 @@ bool Node::is_terminal() {
                 break;
             }
             if(i == board_row_size - 1) {
-                score = last_move.action == turn ? win : loss;
+                score = win;
                 is_terminal = true;
             }
         }
