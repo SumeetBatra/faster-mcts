@@ -55,16 +55,16 @@ int main(int argc, char* argv[]) {
         num_simulations << " number of simulations " << 100.0 * (float)mcts.terminal_count / (float) num_simulations <<
         "%" << std::endl;
 
-    std::cout << "Simulating a game..." << std::endl;
-    auto curr = mcts.root;
-    while(!curr->is_terminal()){
-        auto best_child = mcts.best_child(curr);
-        best_child->print();
-        std::cout << "is terminal? " << best_child->is_terminal() << std::endl;
-        curr = best_child;
-    }
+//    std::cout << "Simulating a game..." << std::endl;
+//    auto curr = mcts.root;
+//    while(!curr->is_terminal()){
+//        auto best_child = mcts.best_child(curr);
+//        best_child->print();
+//        std::cout << "is terminal? " << best_child->is_terminal() << std::endl;
+//        curr = best_child;
+//    }
 
-//    play_game(mcts);
+    play_game(mcts);
 
     return 1;
 }
