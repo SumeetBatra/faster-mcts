@@ -1,7 +1,7 @@
 //
 // Created by Sumeet Batra on 5/13/22.
 //
-#include "node.h"
+#include "TicTacToe/ttt_node.h"
 #include "mcts.h"
 #include <iostream>
 
@@ -17,8 +17,8 @@ void play_game(MCTS mcts) {
         current_state->print();
         std::cout << "Make a move: ";
         std::cin >> x >> y >> action;
-        game_move m(x, y, action);
-        current_state = mcts.take_action(current_state, m); // user makes a move
+        TTT_Action a(game_move(x, y), action);
+        current_state = mcts.take_action(current_state, a); // user makes a move
         if(!current_state->is_terminal()){
             current_state = mcts.best_child(current_state); // mcts makes a move
         }
@@ -35,10 +35,10 @@ int main(int argc, char* argv[]) {
             {'.', '.', '.'},
             {'.', '.', '.'},
     }};
-    Node root(state, game_move(0, 0, 'o'));
+    TTT_Node root(state, TTT_Action(game_move(0, 0), 'o'));
     root.visit_count++;
     root.print();
-    auto root_ptr = std::make_shared<Node>(root);
+    auto root_ptr = std::make_shared<TTT_Node>(root);
     root_ptr->unexpanded = root_ptr->get_actions();
     MCTS mcts(root_ptr);
     mcts.expand(root_ptr);

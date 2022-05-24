@@ -5,7 +5,7 @@ project(mcts)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_library(mcts mcts.cpp mcts.h node.cpp node.h)
+add_library(mcts mcts.cpp mcts.h TicTacToe/ttt_node.cpp TicTacToe/ttt_node.h node.cpp node.h)
 
 add_executable(main main.cpp)
 
