@@ -23,12 +23,15 @@ class Printable{
     virtual void print() = 0;
 };
 
-template<typename T>
+template<typename T, typename A>
 class State: protected Printable{
-    friend std::ostream& operator<<(std::ostream& stream, State<T> s){
+    friend std::ostream& operator<<(std::ostream& stream, State<T, A> s){
         s.print(stream);
         return stream ;
     }
+public:
+    virtual void operator()(A& action) = 0;
+    virtual bool is_valid_action(A& action) const = 0;
 };
 
 template<typename T>
@@ -40,7 +43,7 @@ class Action: protected Printable{
 
 public:
     virtual void execute(T& state) = 0;
-
+//    Action(Action<T>& other) = 0; // copy constructor
     virtual ~Action() = default;
 };
 
@@ -81,8 +84,7 @@ template<class A, class S>Node<A,S>::Node(S state, A last_move, std::shared_ptr<
         visit_count = 0;
         win_count = 0;
         avg_win_rate = 0;
-        turn = last_move.action == 'x' ? 'o' : 'x'; // if the last move was an 'x', then it's o's turn in this node
-};
+    };
 
 template<class A, class S>Node<A,S>::~Node() = default;
 

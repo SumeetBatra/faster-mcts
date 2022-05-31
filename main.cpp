@@ -2,13 +2,13 @@
 // Created by Sumeet Batra on 5/13/22.
 //
 #include "TicTacToe/ttt_node.h"
-#include "mcts.h"
+#include "TicTacToe/mcts_ttt.h"
 #include <iostream>
 
 static const int num_simulations = 1000000;
 
 
-void play_game(MCTS mcts) {
+void play_game(MCTS_TTT mcts) {
     int x,y;
     char action;
     auto current_state = mcts.root;
@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
     root.print();
     auto root_ptr = std::make_shared<TTT_Node>(root);
     root_ptr->unexpanded = root_ptr->get_actions();
-    MCTS mcts(root_ptr);
+    MCTS_TTT mcts(root_ptr);
     mcts.expand(root_ptr);
 
     for(int i = 0; i < num_simulations; ++i) {

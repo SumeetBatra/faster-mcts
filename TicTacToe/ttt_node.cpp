@@ -21,6 +21,10 @@ void TTT_State::operator()(TTT_Action &a) {
     _state[a.move.x][a.move.y] = a.act;
 }
 
+bool TTT_State::is_valid_action(TTT_Action &action) const {
+    return _state[action.move.x][action.move.y] == '.';
+}
+
 void TTT_State::print(){
     for(auto &row: _state) {
         for(auto & col: row){
@@ -37,6 +41,8 @@ void TTT_State::print(){
  */
 
 TTT_Action::TTT_Action(game_move m, char act): move(m), act(act) {}
+
+TTT_Action::TTT_Action(const TTT_Action &other): move(other.move), act(other.act) {}
 
 TTT_Action::~TTT_Action() noexcept {}
 
@@ -61,7 +67,8 @@ bool TTT_Action::operator==(const TTT_Action &other) const {
 
 
 
-TTT_Node::TTT_Node(TTT_State s, TTT_Action last_move, std::shared_ptr<TTT_Node> parent, bool terminal): _state(s), last_move(last_move), parent(parent), terminal(terminal), rng((std::random_device())()){
+TTT_Node::TTT_Node(TTT_State s, TTT_Action last_move, std::shared_ptr<TTT_Node> parent, bool terminal):
+Node<TTT_Action, TTT_State>(s, last_move, parent, terminal), _state(s), last_move(last_move), parent(parent), terminal(terminal){
     visit_count = 0;
     win_count = 0;
     avg_win_rate = 0;
@@ -69,10 +76,6 @@ TTT_Node::TTT_Node(TTT_State s, TTT_Action last_move, std::shared_ptr<TTT_Node> 
 };
 
 TTT_Node::~TTT_Node() = default;;
-
-const state TTT_Node::get_state() const{
-    return _state.get_state();
-}
 
 std::vector<TTT_Action> TTT_Node::get_actions() const {
     std::vector<TTT_Action> actions;

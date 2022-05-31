@@ -20,20 +20,6 @@ static const float draw = 0.0;
 
 typedef std::array<std::array<char, 3>, 3> state;
 
-//struct game_move { // cell of the 3 x 3 tic tac toe board
-//    std::uint8_t x, y;
-//    char action;
-//    game_move (std::uint8_t x, std::uint8_t  y, char act): x(x), y(y), action(act) {
-//        assert(x <= 2 && y <= 2);
-//        assert(action == 'x' || action == 'o');
-//    };
-//    ~game_move()= default;;
-//    // == operator in order to hash into unordered maps
-//    bool operator==(const game_move &other) const {
-//        return x == other.x && y == other.y && action == other.action;
-//    }
-//};
-
 class TTT_State;
 
 struct game_move{
@@ -44,12 +30,13 @@ struct game_move{
     ~game_move() = default;
 };
 
-class TTT_Action: public Action<TTT_State>{
+class TTT_Action: public virtual Action<TTT_State>{
 public:
     char act;
     game_move move;
 
     TTT_Action(game_move m, char act);
+    TTT_Action(const TTT_Action& other);
     ~TTT_Action() override;
 
     void execute(TTT_State& state) override;
@@ -57,14 +44,15 @@ public:
     bool operator==(const TTT_Action& other) const;
 };
 
-class TTT_State: public State<state>{
+class TTT_State: public State<state, TTT_Action>{
 public:
     TTT_State(state s);
     ~TTT_State() = default;
 
-    void operator()(TTT_Action& a);
+    void operator()(TTT_Action& a) override;
     void print() override;
     state get_state() const { return _state; }
+    bool is_valid_action(TTT_Action& action) const override;
 
 private:
     state _state;
@@ -86,7 +74,7 @@ namespace std {
     };
 }
 
-class TTT_Node {
+class TTT_Node: public Node<TTT_Action, TTT_State> {
 
 public:
     int visit_count;
@@ -102,13 +90,12 @@ public:
     std::vector<TTT_Action> unexpanded;
 
     TTT_Node(TTT_State s, TTT_Action last_move, std::shared_ptr<TTT_Node> parent = nullptr, bool terminal = false);
-    ~TTT_Node();
+    ~TTT_Node() override;
 
-    const state get_state() const;
-    std::vector<TTT_Action> get_actions() const;
-    TTT_Action random_action();
-    bool is_terminal();
-    void print();
+    std::vector<TTT_Action> get_actions() const override;
+    TTT_Action random_action() override;
+    bool is_terminal() override;
+    void print() override;
 
 private:
     TTT_State _state; // 3 x 3 state of the game
