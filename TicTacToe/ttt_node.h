@@ -40,7 +40,7 @@ public:
     ~TTT_Action() override;
 
     void execute(TTT_State& state) override;
-    void print() override;
+    void print() const override;
     bool operator==(const TTT_Action& other) const;
 };
 
@@ -49,10 +49,10 @@ public:
     TTT_State(state s);
     ~TTT_State() = default;
 
-    void operator()(TTT_Action& a) override;
-    void print() override;
+    void operator()(const TTT_Action& a) override;
+    void print() const override;
     state get_state() const { return _state; }
-    bool is_valid_action(TTT_Action& action) const override;
+    bool is_valid_action(const TTT_Action& action) const override;
 
 private:
     state _state;
@@ -95,7 +95,7 @@ public:
     std::vector<TTT_Action> get_actions() const override;
     TTT_Action random_action() override;
     bool is_terminal() override;
-    void print() override;
+    void print() const override;
 
 private:
     TTT_State _state; // 3 x 3 state of the game

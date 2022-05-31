@@ -16,16 +16,16 @@ TTT_State::TTT_State(state s): _state(s) {}
 
 
 
-void TTT_State::operator()(TTT_Action &a) {
+void TTT_State::operator()(const TTT_Action &a) {
     assert(_state[a.move.x][a.move.y] == '.');
     _state[a.move.x][a.move.y] = a.act;
 }
 
-bool TTT_State::is_valid_action(TTT_Action &action) const {
+bool TTT_State::is_valid_action(const TTT_Action &action) const {
     return _state[action.move.x][action.move.y] == '.';
 }
 
-void TTT_State::print(){
+void TTT_State::print() const{
     for(auto &row: _state) {
         for(auto & col: row){
             std::cout << col;
@@ -46,12 +46,12 @@ TTT_Action::TTT_Action(const TTT_Action &other): move(other.move), act(other.act
 
 TTT_Action::~TTT_Action() noexcept {}
 
-void TTT_Action::execute(TTT_State& state) {
-    state(*this);
+void TTT_Action::print() const {
+    std::cout << move.x << " " << move.y << " " << act;
 }
 
-void TTT_Action::print() {
-    std::cout << "x y turn: " << move.x << " " << move.y << " " << act << std::endl;
+void TTT_Action::execute(TTT_State& state) {
+    state(*this);
 }
 
 bool TTT_Action::operator==(const TTT_Action &other) const {
@@ -177,6 +177,6 @@ bool TTT_Node::is_terminal() {
     return is_terminal;
 }
 
-void TTT_Node::print(){
+void TTT_Node::print() const{
     _state.print();
 }

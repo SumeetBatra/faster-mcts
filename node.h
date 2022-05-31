@@ -20,7 +20,7 @@ struct game_result{
 
 
 class Printable{
-    virtual void print() = 0;
+    virtual void print() const = 0;
 };
 
 template<typename T, typename A>
@@ -30,8 +30,8 @@ class State: protected Printable{
         return stream ;
     }
 public:
-    virtual void operator()(A& action) = 0;
-    virtual bool is_valid_action(A& action) const = 0;
+    virtual void operator()(const A& action) = 0;
+    virtual bool is_valid_action(const A& action) const = 0;
 };
 
 template<typename T>
