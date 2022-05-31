@@ -7,6 +7,7 @@
 #ifndef MCTS_MCTS_H
 #define MCTS_MCTS_H
 
+static const float virtual_loss = 1.0;
 
 template<class A, class S, class N>
 class MCTS {
@@ -65,6 +66,10 @@ template<class A, class S, class N> std::shared_ptr<N> MCTS<A, S, N>::best_child
 template<class A, class S, class N> std::shared_ptr<N> MCTS<A, S, N>::select() {
     auto current = root;
     while(current->unexpanded.empty() && !current->terminal) { // keep recursing down as long as the current node doesn't have unexpanded children
+        // virtual loss
+        current->avg_win_rate -= virtual_loss;
+        current->visit_count++;
+
         auto best_ch = best_child_ucb(current);
         current = best_ch;
     }
@@ -91,6 +96,7 @@ template<class A, class S, class N> std::shared_ptr<N> MCTS<A, S, N>::expand(std
     A last_action = action;
     auto child = std::make_shared<N>(new_state, last_action, leaf);
     child->unexpanded = child->get_actions();
+    child->visit_count++; // virtual loss
     leaf->children.insert(std::make_pair(last_action, child));
     return child;
 }
@@ -109,14 +115,12 @@ template<class A, class S, class N> std::shared_ptr<N> MCTS<A, S, N>::simulate(c
 
 template<class A, class S, class N> void MCTS<A, S, N>::backprop(std::shared_ptr<N> &terminal) {
     auto winner = terminal->last_move.act;
-    terminal->visit_count++;
     terminal->avg_win_rate = terminal->win_count / (float)terminal->visit_count;
     auto current = terminal->parent;
     auto score = terminal->end_game_result.score;
     while(current) {
         current->win_count += current->last_move.act == winner ? score : -score;
-        current->visit_count++;
-        current->avg_win_rate = current->win_count / (float)current->visit_count;
+        current->avg_win_rate = (current->win_count / (float)current->visit_count) + virtual_loss;
         current = current->parent;
     }
 }
