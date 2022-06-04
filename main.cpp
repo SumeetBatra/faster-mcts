@@ -3,6 +3,7 @@
 //
 #include "TicTacToe/ttt_node.h"
 #include "TicTacToe/mcts_ttt.h"
+#include "train.h"
 #include <iostream>
 
 static const int num_simulations = 1000000;
@@ -41,28 +42,12 @@ int main(int argc, char* argv[]) {
     auto root_ptr = std::make_shared<TTT_Node>(root);
     root_ptr->unexpanded = root_ptr->get_actions();
     MCTS_TTT mcts(root_ptr);
-    mcts.expand(root_ptr);
+    train(mcts);
 
-    for(int i = 0; i < num_simulations; ++i) {
-        auto leaf = mcts.select();
-        auto new_leaf = mcts.expand(leaf);
-        auto terminal_node = mcts.simulate(new_leaf);
-//        terminal_node->print();
-        mcts.backprop(terminal_node);
-    }
+//    std::cout << "Number of times select() hit a terminal state: " << mcts.terminal_count << " out of " <<
+//        num_simulations << " number of simulations " << 100.0 * (float)mcts.terminal_count / (float) num_simulations <<
+//        "%" << std::endl;
 
-    std::cout << "Number of times select() hit a terminal state: " << mcts.terminal_count << " out of " <<
-        num_simulations << " number of simulations " << 100.0 * (float)mcts.terminal_count / (float) num_simulations <<
-        "%" << std::endl;
-
-//    std::cout << "Simulating a game..." << std::endl;
-//    auto curr = mcts.root;
-//    while(!curr->is_terminal()){
-//        auto best_child = mcts.best_child(curr);
-//        best_child->print();
-//        std::cout << "is terminal? " << best_child->is_terminal() << std::endl;
-//        curr = best_child;
-//    }
 
     play_game(mcts);
 
